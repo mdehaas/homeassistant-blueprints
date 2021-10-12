@@ -1,0 +1,79 @@
+blueprint:
+  name: Motion Light Tutorial
+  description: Turn a light on based on detected motion
+  domain: automation
+  input:
+    ikea_e1743_wirelessdimmer:
+      name: IKEA Wireless Dimmer
+      description: Select the IKEA Wireless Dimmer to use as the trigger for this automation
+      selector:
+        entity:
+          domain: sensor
+          #device_class:
+    target_light:
+      name: Lights
+      description: The lights to keep in sync.
+      selector:
+        target:
+          entity:
+            domain: light
+
+trigger:
+- platform: state
+  entity_id: !input 'ikea_e1743_wirelessdimmer'
+  attribute: action
+
+action:
+- variables:
+    command: '{{ trigger.to_state.state }}'
+- choose:
+  - conditions:
+    - '{{ command == ''on'' }}'
+    sequence:
+    - service: light.turn_on
+      target: !input 'target_light'
+  - conditions:
+    - '{{ command == ''off'' }}'
+    sequence:
+    - service: light.turn_on
+      target: !input 'target_light'
+  # - conditions:
+  #   - '{{ command == ''brightness_up_hold'' }}'
+  #   sequence:
+  #   - repeat:
+  #       until:
+  #       - condition: state
+  #         entity_id: !input 'remote'
+  #         state: brightness_up_release
+  #         attribute: action
+  #       sequence:
+  #       - service: light.turn_on
+  #         data:
+  #           brightness_step_pct: 10
+  #           transition: 1
+  #         target: !input 'light'
+  #       - delay: '1'
+  # - conditions:
+  #   - '{{ command == ''brightness_move_down'' }}'
+  #   sequence:
+  #   - service: light.turn_on
+  #     target: !input 'light'
+  #     data:
+  #       brightness_step_pct: -10
+  #       transition: 1
+  # - conditions:
+  #   - '{{ command == ''brightness_down_hold'' }}'
+  #   sequence:
+  #   - repeat:
+  #       until:
+  #       - condition: state
+  #         entity_id: !input 'remote'
+  #         state: brightness_down_release
+  #         attribute: action
+  #       sequence:
+  #       - service: light.turn_on
+  #         data:
+  #           brightness_step_pct: -10
+  #           transition: 1
+  #         target: !input 'light'
+  #       - delay: '1'
